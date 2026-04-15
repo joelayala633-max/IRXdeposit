@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InjuryRx — Daily Deposit Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f2f2f0;
+    --surface: #ffffff;
+    --surface2: #f7f7f5;
+    --surface3: #eeede9;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #111110;
+    --text2: #6b6b67;
+    --text3: #a8a8a4;
+    --blue-bg: #eef5fd;
+    --blue-text: #1a5fa8;
+    --blue-border: #c2d9f5;
+    --green-bg: #edf7e6;
+    --green-text: #2f6b10;
+    --green-border: #b8dba0;
+    --accent: #1a5fa8;
+    --accent-hover: #1450a0;
+    --accent-dark: #0f3d7a;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-logo-mark {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; font-weight: 700; letter-spacing: -0.5px;
+  }
+  .header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+  .header-title span { color: var(--text3); font-weight: 400; margin-left: 4px; }
+  .header-date { font-size: 12px; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+  .signout-btn { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); transition: all 0.1s; }
+  .signout-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── Layout ── */
+  .main { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 12px;
+  }
+  .card-title, .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 16px;
+  }
+  .card-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 0; }
+  .card-header .card-title { margin-bottom: 2px; }
+
+  /* ── Partner section ── */
+  .partner-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ptab { font-size: 13px; font-weight: 500; padding: 6px 16px; border-radius: 999px; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); transition: all 0.12s; }
+  .ptab:hover { background: var(--surface2); color: var(--text); }
+  .ptab.active { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); font-weight: 600; }
+  .partner-note { font-size: 12px; color: var(--text2); margin-top: 6px; line-height: 1.7; }
+
+  /* ── Buttons ── */
+  .ghost-btn { font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: var(--radius); cursor: pointer; border: 1px dashed var(--border2); background: transparent; color: var(--text2); margin-top: 10px; transition: all 0.1s; }
+  .ghost-btn:hover { background: var(--surface2); color: var(--text); border-style: solid; }
+  .primary-btn { font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: var(--radius); cursor: pointer; border: none; background: var(--accent); color: #fff; transition: background 0.1s; }
+  .primary-btn:hover { background: var(--accent-hover); }
+
+  /* ── Check deposit rows ── */
+  .account-row { display: grid; grid-template-columns: 110px 90px 16px 1fr; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .account-row label { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .dollar-sign { font-size: 14px; color: var(--text3); font-weight: 500; text-align: center; }
+
+  /* ── Wire rows ── */
+  .wire-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .wire-top { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .wire-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .wire-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+
+  /* ── Inputs ── */
+  input[type=text], input[type=number], input[type=password], select {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 9px 12px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,95,168,0.1);
+  }
+  input::placeholder { color: var(--text3); }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a8a8a4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  .icon-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text3); padding: 6px 8px; border-radius: 8px; flex-shrink: 0; transition: all 0.1s; }
+  .icon-btn:hover { color: #c0392b; background: #fdf0ee; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ── Fee breakdown ── */
+  .split-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .split-card {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .split-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    opacity: 0.15;
+  }
+  .split-card.ib::before { background: #1a5fa8; opacity: 0.6; }
+  .split-card.payee::before { background: #d97706; opacity: 0.6; }
+  .split-card.gross::before { background: #16a34a; opacity: 0.6; }
+  .split-card .val { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+  .split-card .lbl { font-size: 11px; font-weight: 600; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ── Preview ── */
+  .preview-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    font-size: 13px;
+    line-height: 2;
+    white-space: pre-wrap;
+    font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+    color: var(--text);
+  }
+  .copy-btn {
+    margin-top: 12px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    transition: background 0.1s;
+    letter-spacing: 0.01em;
+  }
+  .copy-btn:hover { background: var(--accent-hover); }
+  .copy-btn.copied { background: #16a34a; }
+
+  /* ── Recap section ── */
+  .recap-header { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.09em; margin: 1.5rem 0 10px; }
+  .recap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 12px;
+  }
+  .recap-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .recap-name { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .recap-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .recap-preview {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-size: 12px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+    color: var(--text);
+  }
+  .recap-copy-btn {
+    font-size: 13px; font-weight: 600; padding: 8px 18px;
+    border-radius: var(--radius); cursor: pointer;
+    border: none; background: var(--accent); color: #fff;
+    transition: background 0.1s; white-space: nowrap;
+  }
+  .recap-copy-btn:hover { background: var(--accent-hover); }
+  .recap-copy-btn.copied { background: #16a34a; }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    width: 560px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 1.25rem; letter-spacing: -0.02em; }
+  .modal label {
+    font-size: 11px; font-weight: 700; color: var(--text2);
+    display: block; margin-bottom: 6px; margin-top: 16px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .modal-btns { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .modal-btns button {
+    flex: 1; font-size: 14px; font-weight: 500; padding: 11px;
+    border-radius: var(--radius); cursor: pointer;
+    border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+    transition: background 0.1s;
+  }
+  .modal-btns button:hover { background: var(--surface2); }
+  .modal-btns button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .modal-btns button.primary:hover { background: var(--accent-hover); }
+  .edit-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    padding: 10px 14px; background: var(--surface2);
+    border-radius: var(--radius); border: 1px solid var(--border);
+    transition: border-color 0.1s;
+  }
+  .edit-row:hover { border-color: var(--border2); }
+  .edit-row .ename { flex: 1; font-size: 14px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .edit-row .erate { font-size: 11px; font-weight: 500; color: var(--text3); white-space: nowrap; flex-shrink: 0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; background: var(--surface3); padding: 2px 8px; border-radius: 999px; }
+  .split-editor { background: var(--surface2); border-radius: var(--radius); padding: 16px 18px; margin-top: 12px; border: 1px solid var(--border); }
+  .split-editor-title { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .srow { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .srow label { font-size: 13px; font-weight: 500; color: var(--text); margin: 0; text-transform: none; letter-spacing: 0; }
+  .split-preview {
+    font-size: 12px; margin-top: 12px; padding: 12px 14px;
+    background: var(--surface2); border-radius: var(--radius);
+    color: var(--text2); border: 1px solid var(--border);
+    line-height: 1.9; font-family: 'Menlo','Consolas',monospace;
+  }
+
+  
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .wire-top { grid-template-columns: 1fr auto; }
+    .wire-bottom { grid-template-columns: 1fr; }
+    .split-grid { grid-template-columns: 1fr 1fr; }
+    .account-row { grid-template-columns: 95px 75px 14px 1fr; }
+    .modal { width: 95vw; padding: 1.25rem; }
+    header { padding: 0 1rem; }
+    .main { padding: 1.25rem 1rem 5rem; }
+  }
+  :root {
+    --bg: #f4f4f2; --surface: #ffffff; --surface2: #f0efeb; --surface3: #e8e7e2;
+    --border: rgba(0,0,0,0.09); --border2: rgba(0,0,0,0.16);
+    --text: #181816; --text2: #62625e; --text3: #9b9b97;
+    --blue-bg: #e6f1fb; --blue-text: #185fa5; --blue-border: #b5d4f4;
+    --green-bg: #eaf3de; --green-text: #3b6d11; --green-border: #c0dd97;
+    --accent: #185fa5; --radius: 9px; --radius-lg: 14px; --radius-xl: 18px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2.5rem; height: 58px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  header .logo { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  header .logo span { color: var(--text2); font-weight: 400; }
+  .signout-btn { font-size: 13px; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); }
+  .signout-btn:hover { background: var(--surface2); }
+  .main { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; }
+  .section-label, .card-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .partner-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ptab { font-size: 13px; font-weight: 500; padding: 6px 16px; border-radius: 999px; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); transition: all 0.12s; }
+  .ptab:hover { background: var(--surface2); color: var(--text); }
+  .ptab.active { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); font-weight: 600; }
+  .partner-note { font-size: 12px; color: var(--text2); margin-top: 6px; line-height: 1.7; }
+  .ghost-btn { font-size: 13px; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; border: 1px dashed var(--border2); background: transparent; color: var(--text2); margin-top: 10px; }
+  .ghost-btn:hover { background: var(--surface2); color: var(--text); }
+  .account-row { display: grid; grid-template-columns: 110px 90px 16px 1fr; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .account-row label { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .wire-row { display: grid; grid-template-columns: 1fr 190px 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+  input[type=text], input[type=number], input[type=password], select { font-size: 14px; padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--surface); color: var(--text); width: 100%; outline: none; transition: border-color 0.1s, box-shadow 0.1s; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+  input::placeholder { color: var(--text3); }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b9b97' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  .icon-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text3); padding: 5px 7px; border-radius: 6px; flex-shrink: 0; }
+  .icon-btn:hover { color: var(--text); background: var(--surface2); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+  .split-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .split-card { background: var(--surface2); border-radius: var(--radius); padding: 14px 16px; border: 1px solid var(--border); }
+  .split-card .val { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .split-card .lbl { font-size: 11px; font-weight: 500; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .preview-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; font-size: 13px; line-height: 2; white-space: pre-wrap; font-family: 'Menlo','Consolas',monospace; }
+  .copy-btn { margin-top: 1rem; width: 100%; font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text); }
+  .copy-btn:hover { background: var(--surface2); }
+  .copy-btn.copied { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; width: 560px; max-height: 92vh; overflow-y: auto; }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 1.25rem; letter-spacing: -0.01em; }
+  .modal label { font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .modal-btns button { flex: 1; font-size: 14px; font-weight: 500; padding: 10px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text); }
+  .modal-btns button:hover { background: var(--surface2); }
+  .modal-btns button.primary { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); font-weight: 600; }
+  .edit-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 10px 12px; background: var(--surface2); border-radius: var(--radius); border: 1px solid var(--border); }
+  .edit-row .ename { flex: 1; font-size: 14px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .edit-row .erate { font-size: 12px; color: var(--text2); white-space: nowrap; flex-shrink: 0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .split-editor { background: var(--surface2); border-radius: var(--radius); padding: 16px 18px; margin-top: 10px; border: 1px solid var(--border); }
+  .split-editor-title { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .srow { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .srow label { font-size: 14px; font-weight: 400; color: var(--text); margin: 0; text-transform: none; letter-spacing: 0; }
+  .split-preview { font-size: 13px; margin-top: 12px; padding: 12px 14px; background: var(--surface); border-radius: var(--radius); color: var(--text2); border: 1px solid var(--border); line-height: 1.8; font-family: 'Menlo','Consolas',monospace; }
+
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2.5rem; width: 360px; }
+  .login-card h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .login-card p { font-size: 14px; color: var(--text2); margin-bottom: 2rem; }
+  .login-error { font-size: 13px; color: #a32d2d; margin-top: 10px; display: none; }
+  .login-btn { margin-top: 14px; width: 100%; font-size: 14px; font-weight: 600; padding: 11px; border-radius: var(--radius); cursor: pointer; border: none; background: var(--accent); color: #fff; }
+  .login-btn:hover { background: #1450a0; }
+  @media (max-width: 600px) {
+    .wire-row { grid-template-columns: 1fr 1fr; row-gap: 8px; }
+    .split-grid { grid-template-columns: 1fr 1fr; }
+    .account-row { grid-template-columns: 95px 75px 14px 1fr; }
+    .modal { width: 95vw; padding: 1.25rem; }
+  }
+
+  /* ── Nav tabs ── */
+  .nav-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 2rem; }
+  .nav-tab { font-size: 13px; font-weight: 500; padding: 14px 20px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.12s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+  /* ── Page visibility ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Log page ── */
+  .log-main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+
+  /* Entry form */
+  .entry-form-grid { display: grid; grid-template-columns: 140px 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+  .entry-form-grid label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; display: block; margin-bottom: 5px; }
+  .add-entry-btn { font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: var(--radius); cursor: pointer; border: none; background: var(--accent); color: #fff; white-space: nowrap; height: 40px; }
+  .add-entry-btn:hover { background: var(--accent-hover); }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-bar input, .filter-bar select { font-size: 13px; padding: 7px 11px; height: 36px; width: auto; flex: 1; min-width: 120px; }
+  .filter-bar .reset-btn { font-size: 13px; padding: 7px 14px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: transparent; color: var(--text2); height: 36px; white-space: nowrap; }
+  .filter-bar .reset-btn:hover { background: var(--surface2); }
+
+  /* Summary chips */
+  .summary-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: var(--text2); }
+  .chip span { color: var(--text); }
+
+  /* Log table */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .log-table th { background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 10px 14px; text-align: left; white-space: nowrap; }
+  .log-table th:last-child { text-align: center; width: 60px; }
+  .log-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .log-table tr:last-child td { border-bottom: none; }
+  .log-table tr:nth-child(even) td { background: var(--surface2); }
+  .log-table tr:hover td { background: var(--blue-bg); }
+  .log-table .amt { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .log-table .del-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 6px; border-radius: 5px; }
+  .log-table .del-btn:hover { background: #fde8e8; color: #c0392b; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
+
+  /* Export bar */
+  .export-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+  .export-btn { font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--text); transition: all 0.1s; }
+  .export-btn:hover { background: var(--surface2); }
+  .export-btn.green { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .export-btn.green:hover { background: #d4edcc; }
+  .export-btn.copied { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+      <div class="header-logo-mark">IR</div>
+      <div class="header-title">InjuryRx <span>/ Operations</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="header-date" id="header-date"></div>
+    </div>
+  </header>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('builder')">Deposit Builder</div>
+    <div class="nav-tab" onclick="showPage('log')">Payment Log</div>
+  </div>
+  <div class="page active" id="page-builder">
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Partnerships</div>
+          <p style="font-size:13px;color:var(--text2);margin-top:2px;">Assign a partnership &amp; term to each wire deposit below.</p>
+        </div>
+        <button class="primary-btn" onclick="openManage()">Manage partnerships</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Check deposits</div>
+      <div class="account-row"><label>IPS (WY)</label><input type="number" id="ips_wy_c" min="0" value="0"><span class="dollar-sign">$</span><input type="number" id="ips_wy_a" min="0" value="0"></div>
+      <div class="account-row"><label>IRX (WY)</label><input type="number" id="irx_wy_c" min="0" value="0"><span class="dollar-sign">$</span><input type="number" id="irx_wy_a" min="0" value="0"></div>
+      <div class="account-row"><label>IPS (DE)</label><input type="number" id="ips_de_c" min="0" value="0"><span class="dollar-sign">$</span><input type="number" id="ips_de_a" min="0" value="0"></div>
+      <div class="account-row"><label>IRX (DE)</label><input type="number" id="irx_de_c" min="0" value="0"><span class="dollar-sign">$</span><input type="number" id="irx_de_a" min="0" value="0"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Wire deposits</div>
+      <div id="wire-rows"></div>
+      <button class="ghost-btn" onclick="addWireRow()">+ Add wire</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Fee breakdown</div>
+      <div class="split-grid" id="split-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Teams message preview</div>
+      <div class="preview-box" id="preview"></div>
+      <button class="copy-btn" id="copy-btn" onclick="copyMsg()">Copy message to clipboard</button>
+    </div>
+    <div id="recap-section"></div>
+  </div>
+  </div>
+
+<div class="page" id="page-log">
+  <div class="log-main">
+
+    <!-- Entry Form -->
+    <div class="card">
+      <div class="card-title">Add payment entry</div>
+      <div class="entry-form-grid">
+        <div>
+          <label>Date</label>
+          <input type="date" id="log-date">
+        </div>
+        <div>
+          <label>Entity</label>
+          <select id="log-entity">
+            <option value="">— select —</option>
+            <option>IRX</option>
+            <option>IPS</option>
+          </select>
+        </div>
+        <div>
+          <label>Partnership</label>
+          <select id="log-partnership">
+            <option value="">— select —</option>
+          </select>
+        </div>
+        <div>
+          <label>Amount ($)</label>
+          <input type="number" id="log-amount" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div>
+          <label>Notes (optional)</label>
+          <input type="text" id="log-notes" placeholder="e.g. wire ref #1234">
+        </div>
+        <div>
+          <button class="add-entry-btn" onclick="addLogEntry()">+ Add</button>
+        </div>
+      </div>
+      <p id="log-entry-error" style="color:#c0392b;font-size:12px;margin-top:8px;display:none;">Please fill in Date, Entity, Partnership, and Amount.</p>
+    </div>
+
+    <!-- Filter + Summary -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom:14px;">
+        <div class="card-title" style="margin-bottom:0;">Payment log</div>
+        <div class="export-bar">
+          <button class="export-btn" onclick="openManage()">Manage partnerships</button>
+          <button class="export-btn green" onclick="copyLogTSV()">Copy for Excel</button>
+          <button class="export-btn" onclick="exportLogCSV()">Download CSV</button>
+        </div>
+      </div>
+
+      <div class="filter-bar" style="margin-bottom:14px;">
+        <div style="flex:1;min-width:140px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">From date</label>
+          <input type="date" id="filter-from">
+        </div>
+        <div style="flex:1;min-width:140px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">To date</label>
+          <input type="date" id="filter-to">
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">Entity</label>
+          <select id="filter-entity">
+            <option value="">All entities</option>
+            <option>IRX</option>
+            <option>IPS</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:140px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">Partnership</label>
+          <select id="filter-partnership">
+            <option value="">All partnerships</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="reset-btn filter-bar" style="margin-top:0;" onclick="resetFilters()">Reset</button>
+        </div>
+      </div>
+
+      <div class="summary-chips" id="log-summary"></div>
+
+      <div style="overflow-x:auto;">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Entity</th>
+              <th>Partnership</th>
+              <th style="text-align:right;">Amount</th>
+              <th>Notes</th>
+              <th style="text-align:center;">Del</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+        <div id="log-empty" class="empty-state" style="display:none;">No entries yet — add one above.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+
+
+// Term structure: { id, label, feeRate (%), ibPct (% of gross wire to IB), payee }
+const DEFAULT_PARTNERS = [
+  { id: 1, name: 'Move Docs', terms: [
+    { id: 't1', label: 'Pay out', feeRate: 22.5, ibPct: 100, payee: '' },
+    { id: 't2', label: 'Pay out (split)', feeRate: 32.5, ibPct: 90, payee: 'Vital Marketing' }
+  ]},
+  { id: 2, name: 'Other Partner', terms: [
+    { id: 't3', label: 'Pay out', feeRate: 22.5, ibPct: 100, payee: '' }
+  ]}
+];
+
+let partners = [];
+try { partners = JSON.parse(localStorage.getItem('ib_partners_v7') || 'null') || []; } catch(e) {}
+if (!partners.length) partners = JSON.parse(JSON.stringify(DEFAULT_PARTNERS));
+
+let currentId = partners[0]?.id;
+let wires = [];
+let wireIdCtr = 20;
+
+function save() {
+  try { localStorage.setItem('ib_partners_v7', JSON.stringify(partners)); } catch(e) {}
+  // Keep log dropdowns in sync
+  if (document.getElementById('page-log')?.classList.contains('active')) {
+    populateLogPartnershipDropdowns();
+  }
+}
+function cp() { return partners.find(p => p.id === currentId) || partners[0]; }
+const fmt = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const pctFmt = n => Number(n).toFixed(1).replace(/\.0$/,'') + '%';
+const gv = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+const checkAccounts = [
+  {id:'ips_wy', label:'IPS (WY)'}, {id:'irx_wy', label:'IRX (WY)'},
+  {id:'ips_de', label:'IPS (DE)'}, {id:'irx_de', label:'IRX (DE)'}
+];
+
+function termSummary(t) {
+  if (t.ibPct >= 100) return `${pctFmt(t.feeRate)} → 100% InjuryBridge`;
+  const payeePct = (100 - t.ibPct).toFixed(1).replace(/\.0$/,'');
+  return `${pctFmt(t.feeRate)} → ${t.ibPct}% IB / ${payeePct}% ${t.payee||'payee'}`;
+}
+
+function calcSplit(amt, term) {
+  if (!term) return { ib: amt, payeeAmt: 0, payee: '' };
+  const ibAmt = amt * (term.ibPct / 100);
+  const payeeAmt = amt - ibAmt;
+  return { ib: ibAmt, payeeAmt, payee: term.payee || '' };
+}
+
+function init() {
+  const p = partners[0];
+  wires = [
+    { id: 1, name: 'IRX (Wire)', partnerId: p?.id, termId: p?.terms[1]?.id || p?.terms[0]?.id || '', amt: 0 },
+    { id: 2, name: 'IPS (Wire)', partnerId: p?.id, termId: p?.terms[1]?.id || p?.terms[0]?.id || '', amt: 0 }
+  ];
+  renderWireRows(); calc();
+  document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', calc));
+}
+
+
+
+
+
+function termOptions(partner, selectedId) {
+  let opts = `<option value="">— select term —</option>`;
+  (partner?.terms||[]).forEach(t => {
+    opts += `<option value="${t.id}" ${t.id===selectedId?'selected':''}>${t.label} (${pctFmt(t.feeRate)})</option>`;
+  });
+  return opts;
+}
+
+function partnerOptions(selectedPid) {
+  return partners.map(p =>
+    `<option value="${p.id}" ${p.id===selectedPid?'selected':''}>${esc(p.name)}</option>`
+  ).join('');
+}
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function termOptionsForPartner(pid, selectedTermId) {
+  const p = partners.find(x => x.id === pid);
+  let opts = `<option value="">— select term —</option>`;
+  (p?.terms||[]).forEach(t => {
+    opts += `<option value="${t.id}" ${t.id===selectedTermId?'selected':''}>${esc(t.label)} (${pctFmt(t.feeRate)})</option>`;
+  });
+  return opts;
+}
+
+function renderWireRows() {
+  if (!document.getElementById('wire-rows')) return;
+  document.getElementById('wire-rows').innerHTML = wires.map(w => `
+    <div class="wire-card">
+      <div class="wire-top">
+        <div>
+          <div class="wire-label">Account name</div>
+          <input type="text" value="${esc(w.name)}" placeholder="e.g. IRX (Wire)" oninput="updateWire(${w.id},'name',this.value)">
+        </div>
+        <div>
+          <div class="wire-label">Amount ($)</div>
+          <input type="number" value="${w.amt||''}" min="0" placeholder="0.00" oninput="updateWire(${w.id},'amt',this.value)">
+        </div>
+        <button class="icon-btn" onclick="removeWire(${w.id})" title="Remove wire" style="margin-top:20px;">✕</button>
+      </div>
+      <div class="wire-bottom">
+        <div>
+          <div class="wire-label">Partnership</div>
+          <select onchange="updateWirePartner(${w.id},this.value)">${partnerOptions(w.partnerId)}</select>
+        </div>
+        <div>
+          <div class="wire-label">Term</div>
+          <select onchange="updateWire(${w.id},'termId',this.value)">${termOptionsForPartner(w.partnerId, w.termId)}</select>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateWirePartner(id, pid) {
+  const w = wires.find(x => x.id === id);
+  if (!w) return;
+  w.partnerId = Number(pid);
+  const p = partners.find(x => x.id === w.partnerId);
+  w.termId = p?.terms[0]?.id || '';
+  renderWireRows(); calc();
+}
+
+function updateWire(id, field, val) {
+  const w = wires.find(x => x.id === id);
+  if (!w) return;
+  w[field] = field === 'amt' ? parseFloat(val)||0 : val;
+  calc();
+}
+
+function addWireRow() {
+  if (!partners.length) return;
+  const p = partners[0];
+  wires.push({ id: ++wireIdCtr, name: '', partnerId: p.id, termId: p.terms[0]?.id||'', amt: 0 });
+  renderWireRows(); calc();
+}
+
+function removeWire(id) { wires = wires.filter(w => w.id !== id); renderWireRows(); calc(); }
+
+function calc() {
+  if (!partners.length) return;
+  const today = new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'});
+  const checkTotal = checkAccounts.reduce((s,a) => s + gv(a.id+'_a'), 0);
+
+  // compute splits per wire using each wire's own partnership+term
+  const wireSplits = wires.map(w => {
+    const p = partners.find(x => x.id === w.partnerId);
+    const term = p?.terms.find(t => t.id === w.termId);
+    return calcSplit(w.amt, term);
+  });
+
+  const totalIBwires = wireSplits.reduce((s,x) => s + x.ib, 0);
+  const totalPayeeAll = wireSplits.reduce((s,x) => s + x.payeeAmt, 0);
+  const totalIB = checkTotal + totalIBwires;
+  const grandTotal = checkTotal + wires.reduce((s,w) => s + w.amt, 0);
+
+  // fee breakdown — collect unique payees
+  const payeeMap = {};
+  wireSplits.forEach(s => { if (s.payeeAmt > 0 && s.payee) payeeMap[s.payee] = (payeeMap[s.payee]||0) + s.payeeAmt; });
+  const payeeCards = Object.entries(payeeMap).map(([name, amt]) =>
+    `<div class="split-card"><div class="val">${fmt(amt)}</div><div class="lbl">${name}</div></div>`
+  ).join('');
+  const colCount = 2 + Object.keys(payeeMap).length;
+  document.getElementById('split-grid').style.gridTemplateColumns = Array(colCount).fill('1fr').join(' ');
+  document.getElementById('split-grid').innerHTML = `
+    <div class="split-card ib"><div class="val">${fmt(totalIB)}</div><div class="lbl">InjuryBridge deposit</div></div>
+    ${payeeCards}
+    <div class="split-card gross"><div class="val">${fmt(grandTotal)}</div><div class="lbl">Total gross</div></div>
+  `;
+
+  // combined Teams message — group wires by partnership
+  const partnerNames = [...new Set(wires.filter(w=>w.amt>0).map(w => partners.find(x=>x.id===w.partnerId)?.name).filter(Boolean))];
+  const partnerStr = partnerNames.length ? partnerNames.join(', ') : '—';
+  let lines = [`Hi! Please see deposits for today — ${today} Deposit List\nPartnerships: ${partnerStr}\n`];
+  checkAccounts.forEach(a => {
+    const c = gv(a.id+'_c'), amt = gv(a.id+'_a');
+    if (amt > 0) lines.push(`• ${a.label} — ${c} check${c!==1?'s':''} — ${fmt(amt)}`);
+  });
+  wires.forEach((w, i) => {
+    if (w.amt > 0) {
+      const p = partners.find(x => x.id === w.partnerId);
+      const term = p?.terms.find(t => t.id === w.termId);
+      const s = wireSplits[i];
+      let line = `• ${w.name||'Wire'} [${p?.name||'?'}] — 1 wire — ${fmt(w.amt)}`;
+      if (term) {
+        line += ` | ${pctFmt(term.feeRate)} → ${fmt(s.ib)} to InjuryBridge`;
+        if (s.payeeAmt > 0) line += ` | ${fmt(s.payeeAmt)} to ${s.payee}`;
+      }
+      lines.push(line);
+    }
+  });
+  lines.push(`\nTotal gross: ${fmt(grandTotal)}`);
+  lines.push(`→ InjuryBridge deposit: ${fmt(totalIB)}`);
+  Object.entries(payeeMap).forEach(([name, amt]) => lines.push(`→ ${name} (excluded): ${fmt(amt)}`));
+  document.getElementById('preview').textContent = lines.join('\n');
+
+  // per-partnership recaps
+  renderRecaps(today, wireSplits);
+}
+
+function renderRecaps(today, wireSplits) {
+  const involved = partners.filter(p => wires.some(w => w.partnerId === p.id && w.amt > 0));
+  if (!involved.length) { document.getElementById('recap-section').innerHTML = ''; return; }
+
+  const html = involved.map(p => {
+    const pWires = wires.map((w,i) => ({w, s: wireSplits[i]})).filter(({w}) => w.partnerId === p.id && w.amt > 0);
+    const pWireTotal = pWires.reduce((s,{w}) => s + w.amt, 0);
+    const pIB = pWires.reduce((s,{s:sp}) => s + sp.ib, 0);
+    const pPayeeMap = {};
+    pWires.forEach(({s}) => { if (s.payeeAmt > 0 && s.payee) pPayeeMap[s.payee] = (pPayeeMap[s.payee]||0) + s.payeeAmt; });
+
+    const wireLines = pWires.map(({w, s}) => {
+      const term = p.terms.find(t => t.id === w.termId);
+      let l = `• ${w.name||'Wire'} — ${fmt(w.amt)}`;
+      if (term) { l += ` | ${pctFmt(term.feeRate)} → ${fmt(s.ib)} to InjuryBridge`; if (s.payeeAmt>0) l += ` | ${fmt(s.payeeAmt)} to ${s.payee}`; }
+      return l;
+    }).join('\n');
+
+    const recapText = [`${p.name} — Recap ${today}`, '', wireLines, '', `Wire total: ${fmt(pWireTotal)}`, `→ InjuryBridge: ${fmt(pIB)}`, ...Object.entries(pPayeeMap).map(([n,a])=>`→ ${n}: ${fmt(a)}`)].join('\n');
+
+    return `<div class="recap-card"><div class="recap-card-header"><div><div class="recap-name">${p.name}</div><div class="recap-meta">${pWires.length} wire${pWires.length!==1?'s':''} · gross ${fmt(pWireTotal)}</div></div><button class="recap-copy-btn" onclick="copyRecap(this,'${p.id}')">Copy recap</button></div><div class="recap-preview" id="recap-${p.id}">${recapText}</div></div>`;
+  }).join('');
+
+  document.getElementById('recap-section').innerHTML = `<div class="recap-header">Partnership recaps</div>${html}`;
+
+  // store recap text for copy
+  involved.forEach(p => {
+    const pWires = wires.map((w,i) => ({w, s: wireSplits[i]})).filter(({w}) => w.partnerId === p.id && w.amt > 0);
+    const pWireTotal = pWires.reduce((s,{w}) => s + w.amt, 0);
+    const pIB = pWires.reduce((s,{s:sp}) => s + sp.ib, 0);
+    const pPayeeMap = {};
+    pWires.forEach(({s}) => { if (s.payeeAmt > 0 && s.payee) pPayeeMap[s.payee] = (pPayeeMap[s.payee]||0) + s.payeeAmt; });
+    const wireLines = pWires.map(({w, s}) => {
+      const term = p.terms.find(t => t.id === w.termId);
+      let l = `• ${w.name||'Wire'} — ${fmt(w.amt)}`;
+      if (term) { l += ` | ${pctFmt(term.feeRate)} → ${fmt(s.ib)} to InjuryBridge`; if (s.payeeAmt>0) l += ` | ${fmt(s.payeeAmt)} to ${s.payee}`; }
+      return l;
+    }).join('\n');
+    const recapText = [`${p.name} — Recap ${today}`, '', wireLines, '', `Wire total: ${fmt(pWireTotal)}`, `→ InjuryBridge: ${fmt(pIB)}`, ...Object.entries(pPayeeMap).map(([n,a])=>`→ ${n}: ${fmt(a)}`)].join('\n');
+    window['__recap_'+p.id] = recapText;
+  });
+}
+
+function copyRecap(btn, pid) {
+  const text = window['__recap_'+pid] || '';
+  if (!text) return;
+  const doFallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy recap'; btn.classList.remove('copied'); btn.classList.remove('copied'); }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy recap'; btn.classList.remove('copied'); btn.classList.remove('copied'); }, 2000);
+    }).catch(doFallback);
+  } else { doFallback(); }
+}
+
+function copyMsg() {
+  const text = document.getElementById('preview').textContent;
+  const btn = document.getElementById('copy-btn');
+  const done = () => {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy message'; btn.classList.remove('copied'); }, 2000);
+  };
+  const doFallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta); done();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(doFallback);
+  } else { doFallback(); }
+}
+
+function openManage() { showManageMain(); document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function showManageMain() {
+  document.getElementById('modal-content').innerHTML = `
+    <h3>Manage partnerships</h3>
+    <div id="plist">${renderPList()}</div>
+    <hr style="margin:12px 0;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Add new partnership</div>
+    <label>Name</label>
+    <input type="text" id="new-name" placeholder="e.g. ABC Health">
+    <div class="modal-btns">
+      <button onclick="closeModal()">Close</button>
+      <button class="primary" onclick="addPartner()">Add</button>
+    </div>`;
+}
+
+function renderPList() {
+  if (!partners.length) return '<p style="font-size:13px;color:var(--text2);">No partnerships yet.</p>';
+  return partners.map(p => `
+    <div class="edit-row">
+      <span class="ename">${p.name}</span>
+      <span class="erate">${p.terms.length} term${p.terms.length!==1?'s':''}</span>
+      <button class="icon-btn" onclick="showEditPartner(${p.id})">✎</button>
+      <button class="icon-btn" onclick="removePartner(${p.id})" style="color:#a32d2d;">✕</button>
+    </div>`).join('');
+}
+
+function addPartner() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) return;
+  partners.push({ id: Date.now(), name, terms: [] });
+  save();
+  document.getElementById('plist').innerHTML = renderPList();
+  document.getElementById('new-name').value = '';
+}
+
+function removePartner(id) {
+  if (partners.length <= 1) return;
+  partners = partners.filter(p => p.id !== id);
+  if (currentId === id) currentId = partners[0].id;
+  // Reassign any wires that referenced the deleted partner
+  wires.forEach(w => {
+    if (w.partnerId === id) {
+      w.partnerId = partners[0].id;
+      w.termId = partners[0].terms[0]?.id || '';
+    }
+  });
+  save(); renderWireRows(); calc();
+  document.getElementById('plist').innerHTML = renderPList();
+}
+
+function showEditPartner(id) {
+  const p = partners.find(x => x.id === id);
+  document.getElementById('modal-content').innerHTML = `
+    <h3>Edit: ${p.name}</h3>
+    <label>Partnership name</label>
+    <input type="text" id="ep-name" value="${p.name}" oninput="liveRename(${id},this.value)">
+    <div style="margin-top:1rem;margin-bottom:4px;font-size:13px;font-weight:500;">Terms</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">Each term is a fee rule you can assign to wire deposits.</p>
+    <div id="term-list">${renderTermList(p)}</div>
+    <hr style="margin:10px 0;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Add term</div>
+    ${termFormFields('nt', null)}
+    <div class="modal-btns">
+      <button onclick="showManageMain()">Back</button>
+      <button class="primary" onclick="addTerm(${id})">Add term</button>
+    </div>`;
+  updateSplitPreview('nt');
+}
+
+function termFormFields(prefix, t) {
+  const label = t ? t.label : '';
+  const feeRate = t ? t.feeRate : 32.5;
+  const ibPct = t ? t.ibPct : 90;
+  const payee = t ? (t.payee||'') : '';
+  return `
+    <label>Term label</label>
+    <input type="text" id="${prefix}-label" placeholder="e.g. Pay out" value="${label}">
+    <div class="split-editor">
+      <div class="split-editor-title">Fee split settings</div>
+      <div class="srow">
+        <label>Fee rate (%)</label>
+        <input type="number" id="${prefix}-feerate" value="${feeRate}" min="0" max="100" step="0.5" style="width:130px;" oninput="updateSplitPreview('${prefix}')">
+      </div>
+      <div class="srow">
+        <label>InjuryBridge receives (%)</label>
+        <input type="number" id="${prefix}-ibpct" value="${ibPct}" min="0" max="100" step="1" style="width:130px;" oninput="updateSplitPreview('${prefix}')">
+      </div>
+      <div class="srow">
+        <label>Payee name (gets the rest)</label>
+        <input type="text" id="${prefix}-payee" value="${payee}" placeholder="e.g. Vital Marketing" style="width:130px;" oninput="updateSplitPreview('${prefix}')">
+      </div>
+      <div class="split-preview" id="${prefix}-preview"></div>
+    </div>`;
+}
+
+function updateSplitPreview(prefix) {
+  const feeRate = parseFloat(document.getElementById(prefix+'-feerate')?.value) || 0;
+  const ibPct = parseFloat(document.getElementById(prefix+'-ibpct')?.value) || 0;
+  const payeePct = Math.max(0, 100 - ibPct);
+  const payee = document.getElementById(prefix+'-payee')?.value?.trim() || 'payee';
+  const el = document.getElementById(prefix+'-preview');
+  if (!el) return;
+  const ibAmt = (1000 * ibPct / 100).toFixed(2);
+  const payeeAmt = (1000 * payeePct / 100).toFixed(2);
+  let line = `Example — $1,000 wire:\n→ $${ibAmt} to InjuryBridge (${ibPct}%)`;
+  if (payeePct > 0) line += `\n→ $${payeeAmt} to ${payee} (${payeePct.toFixed(1).replace(/\.0$/,'')}%)`;
+  el.textContent = line;
+}
+
+function liveRename(id, val) {
+  const p = partners.find(x => x.id === id);
+  if (p) { p.name = val; save(); renderWireRows(); }
+}
+
+function renderTermList(p) {
+  if (!p.terms.length) return '<p style="font-size:13px;color:var(--text2);">No terms yet.</p>';
+  return p.terms.map(t => `
+    <div class="edit-row">
+      <span class="ename">${t.label}</span>
+      <span class="erate">${termSummary(t)}</span>
+      <button class="icon-btn" onclick="showEditTerm(${p.id},'${t.id}')">✎</button>
+      <button class="icon-btn" onclick="removeTerm(${p.id},'${t.id}')" style="color:#a32d2d;">✕</button>
+    </div>`).join('');
+}
+
+function addTerm(pid) {
+  const p = partners.find(x => x.id === pid);
+  const label = document.getElementById('nt-label').value.trim();
+  if (!label) return;
+  p.terms.push({
+    id: 't'+Date.now(),
+    label,
+    feeRate: parseFloat(document.getElementById('nt-feerate').value) || 0,
+    ibPct: parseFloat(document.getElementById('nt-ibpct').value) || 100,
+    payee: document.getElementById('nt-payee').value.trim()
+  });
+  save(); renderWireRows();
+  document.getElementById('term-list').innerHTML = renderTermList(p);
+  document.getElementById('nt-label').value = '';
+  document.getElementById('nt-feerate').value = '32.5';
+  document.getElementById('nt-ibpct').value = '90';
+  document.getElementById('nt-payee').value = '';
+  updateSplitPreview('nt');
+}
+
+function removeTerm(pid, tid) {
+  const p = partners.find(x => x.id === pid);
+  p.terms = p.terms.filter(t => t.id !== tid);
+  // Clear termId on wires that referenced this term
+  wires.forEach(w => { if (w.termId === tid) w.termId = p.terms[0]?.id || ''; });
+  save(); renderWireRows(); calc();
+  document.getElementById('term-list').innerHTML = renderTermList(p);
+}
+
+function showEditTerm(pid, tid) {
+  const p = partners.find(x => x.id === pid);
+  const t = p.terms.find(x => x.id === tid);
+  document.getElementById('modal-content').innerHTML = `
+    <h3>Edit term</h3>
+    ${termFormFields('et', t)}
+    <div class="modal-btns">
+      <button onclick="showEditPartner(${pid})">Back</button>
+      <button class="primary" onclick="saveTerm(${pid},'${tid}')">Save</button>
+    </div>`;
+  updateSplitPreview('et');
+}
+
+function saveTerm(pid, tid) {
+  const p = partners.find(x => x.id === pid);
+  const t = p.terms.find(x => x.id === tid);
+  t.label = document.getElementById('et-label').value.trim() || t.label;
+  t.feeRate = parseFloat(document.getElementById('et-feerate').value) || 0;
+  t.ibPct = parseFloat(document.getElementById('et-ibpct').value) || 100;
+  t.payee = document.getElementById('et-payee').value.trim();
+  save(); renderWireRows(); calc();
+  showEditPartner(pid);
+}
+
+// Set header date
+const hd = document.getElementById('header-date');
+if (hd) hd.textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+init();
+
+// ═══════════════════════════════════════════════════════
+// PAYMENT LOG
+// ═══════════════════════════════════════════════════════
+let logEntries = [];
+try { logEntries = JSON.parse(localStorage.getItem('ib_log_v1') || '[]'); } catch(e) {}
+
+function saveLog() { try { localStorage.setItem('ib_log_v1', JSON.stringify(logEntries)); } catch(e) {} }
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name === 'builder' ? 'deposit' : 'payment')) t.classList.add('active');
+  });
+  if (name === 'log') { populateLogPartnershipDropdowns(); renderLog(); }
+}
+
+function populateLogPartnershipDropdowns() {
+  const selects = ['log-partnership', 'filter-partnership'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    const isFilter = id === 'filter-partnership';
+    sel.innerHTML = isFilter
+      ? '<option value="">All partnerships</option>'
+      : '<option value="">— select —</option>';
+    partners.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.name;
+      opt.textContent = p.name;
+      if (p.name === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function addLogEntry() {
+  const date = document.getElementById('log-date').value;
+  const entity = document.getElementById('log-entity').value;
+  const partnership = document.getElementById('log-partnership').value;
+  const amount = parseFloat(document.getElementById('log-amount').value);
+  const notes = document.getElementById('log-notes').value.trim();
+  const err = document.getElementById('log-entry-error');
+
+  if (!date || !entity || !partnership || isNaN(amount) || amount <= 0) {
+    err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+
+  logEntries.push({ id: Date.now(), date, entity, partnership, amount, notes });
+  logEntries.sort((a,b) => b.date.localeCompare(a.date));
+  saveLog();
+
+  // Reset form
+  document.getElementById('log-date').value = '';
+  document.getElementById('log-entity').value = '';
+  document.getElementById('log-partnership').value = '';
+  document.getElementById('log-amount').value = '';
+  document.getElementById('log-notes').value = '';
+  renderLog();
+}
+
+function deleteLogEntry(id) {
+  logEntries = logEntries.filter(e => e.id !== id);
+  saveLog(); renderLog();
+}
+
+function getFiltered() {
+  const from = document.getElementById('filter-from')?.value || '';
+  const to   = document.getElementById('filter-to')?.value || '';
+  const ent  = document.getElementById('filter-entity')?.value || '';
+  const pship= document.getElementById('filter-partnership')?.value || '';
+  return logEntries.filter(e =>
+    (!from || e.date >= from) &&
+    (!to   || e.date <= to) &&
+    (!ent  || e.entity === ent) &&
+    (!pship|| e.partnership === pship)
+  );
+}
+
+function resetFilters() {
+  ['filter-from','filter-to','filter-entity','filter-partnership'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderLog();
+}
+
+function renderLog() {
+  const entries = getFiltered();
+  const tbody = document.getElementById('log-tbody');
+  const empty = document.getElementById('log-empty');
+  if (!tbody) return;
+
+  if (!entries.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = entries.map(e => `
+      <tr>
+        <td>${formatDate(e.date)}</td>
+        <td><strong>${esc(e.entity)}</strong></td>
+        <td>${esc(e.partnership)}</td>
+        <td class="amt" style="text-align:right;">${fmtAmt(e.amount)}</td>
+        <td style="color:var(--text2);font-size:12px;">${esc(e.notes||'—')}</td>
+        <td style="text-align:center;"><button class="del-btn" onclick="deleteLogEntry(${e.id})" title="Delete">✕</button></td>
+      </tr>`).join('');
+  }
+
+  // Summary chips
+  const total = entries.reduce((s,e) => s+e.amount, 0);
+  const byEntity = {};
+  const byPship = {};
+  entries.forEach(e => {
+    byEntity[e.entity] = (byEntity[e.entity]||0) + e.amount;
+    byPship[e.partnership] = (byPship[e.partnership]||0) + e.amount;
+  });
+  const topPship = Object.entries(byPship).sort((a,b)=>b[1]-a[1])[0];
+
+  const chips = [
+    `<div class="chip">${entries.length} entries · <span>${fmtAmt(total)}</span> total</div>`,
+    ...Object.entries(byEntity).map(([n,a]) => `<div class="chip">${n}: <span>${fmtAmt(a)}</span></div>`),
+    topPship ? `<div class="chip">Top: <span>${topPship[0]}</span> ${fmtAmt(topPship[1])}</div>` : ''
+  ];
+  document.getElementById('log-summary').innerHTML = chips.join('');
+
+  // Wire up filter change listeners
+  ['filter-from','filter-to','filter-entity','filter-partnership'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._bound) { el.addEventListener('change', renderLog); el._bound = true; }
+  });
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,dy] = d.split('-');
+  return `${m}/${dy}/${y}`;
+}
+
+function fmtAmt(n) {
+  return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function copyLogTSV() {
+  const entries = getFiltered();
+  if (!entries.length) return;
+  const header = 'Date\tEntity\tPartnership\tAmount\tNotes';
+  const rows = entries.map(e =>
+    `${formatDate(e.date)}\t${e.entity}\t${e.partnership}\t${e.amount.toFixed(2)}\t${e.notes||''}`
+  );
+  const text = [header, ...rows].join('\n');
+  const btn = document.querySelector('.export-btn.green');
+  const doFallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+    if(btn){ btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(()=>{btn.textContent='Copy for Excel';btn.classList.remove('copied');},2000); }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      if(btn){ btn.textContent='Copied!'; btn.classList.add('copied'); setTimeout(()=>{btn.textContent='Copy for Excel';btn.classList.remove('copied');},2000); }
+    }).catch(doFallback);
+  } else { doFallback(); }
+}
+
+function exportLogCSV() {
+  const entries = getFiltered();
+  if (!entries.length) return;
+  const header = 'Date,Entity,Partnership,Amount,Notes';
+  const rows = entries.map(e =>
+    `${formatDate(e.date)},${e.entity},${e.partnership},${e.amount.toFixed(2)},"${(e.notes||'').replace(/"/g,'""')}"`
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'InjuryRx_Deposits_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+</script>
+</body>
+</html>
